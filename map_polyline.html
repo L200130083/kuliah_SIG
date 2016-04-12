@@ -1,0 +1,77 @@
+<html>
+	<head>
+		<title>Map</title>
+		<script src="https://maps.googleapis.com/maps/api/js"></script>
+		<script>
+		var map = null;
+		function init(){
+			var opt = {
+				center:JSON.parse('{"lat":0,"lng":0}'), //just a test :v
+				zoom:15,
+				mapTypeId:google.maps.MapTypeId.ROADMAP,
+			};
+			var container = document.getElementById("mappool");
+			map = new google.maps.Map(container, opt);
+			events();
+			//poligon();
+		}
+		function poligon(){
+			var polylineSpot = [
+				[0,0],
+				[0,1],
+				[1,1],
+				[2,1],
+				[1,2]
+			];
+			var rendered = [];
+			for(i=0;i<polylineSpot.length;i++){
+				rendered.push(new google.maps.LatLng(polylineSpot[i][0],polylineSpot[i][1]));
+			}
+			var lineOptions = {
+                      path: rendered,
+            }
+			var polyline = new google.maps.Polyline(lineOptions);
+			polyline.setMap(map);
+			map.setCenter(rendered[rendered.length-1]);
+		}
+		function events(){
+			//do some shitty events here, okay!
+			var locations = document.getElementsByClassName("location");
+			for(i=0;i<locations.length;i++){
+				locations[i].addEventListener('click', function(){
+					var loc = this.getAttribute('data-loc');
+					if (loc == 'myloc'){
+						if (navigator.geolocation){
+							navigator.geolocation.getCurrentPosition(function(pos){
+								map.setCenter({lat:pos.coords.latitude,lng:pos.coords.longitude});
+							});
+						}
+					}else{
+						map.setCenter(JSON.parse(loc));
+					}
+					
+				});
+			}
+			document.getElementById("mappool").addEventListener('mousemove', function(){
+				document.getElementById("center").innerHTML = map.getCenter();
+			});
+			document.getElementById("pol").addEventListener('click', function(){
+				poligon();
+			});
+			
+		}
+		google.maps.event.addDomListener(window, 'load', init);
+		</script>
+		<style>#mappool {width:100%;height:100%}</style>
+	</head>
+	<body>
+		<div>
+			<button class="location" data-loc='{"lat":0,"lng":0}'> 0 0 </button>
+			<button class="location" data-loc='{"lat": -7.5567152, "lng": 110.770925}'> UMS </button>
+			<button class="location" data-loc='myloc'> ME </button>
+			<button id="pol"> Draw Polyline </button>
+			[<b id="center">??</b>]
+		</div>
+		<div id="mappool"></div>
+	</body>
+</html>
